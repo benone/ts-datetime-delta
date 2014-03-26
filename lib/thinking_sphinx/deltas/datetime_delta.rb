@@ -96,8 +96,12 @@ class ThinkingSphinx::Deltas::DatetimeDelta < ThinkingSphinx::Deltas::DefaultDel
       rotate = (controller.running? ? ' --rotate' : '')
 
       unless(ENV['DISABLE_MERGE'] == 'true')
-        core_index = config.indices.select{|idx|idx.reference == delta_index.reference && idx.delta? == false}.first
+
+        core_index_name = delta_index.name.gsub(/delta/, 'core')
+        core_index = config.indices.select{|idx|idx.name == core_index_name && idx.delta? == false}.first
+
         if (core_index)
+          output += `#{controller.bin_path}#{controller.indexer_binary_name} --config #{config.configuration_file}#{rotate} #{delta_index.name}`
           output += `#{controller.bin_path}#{controller.indexer_binary_name} --config #{config.configuration_file}#{rotate} --merge #{core_index.name} #{delta_index.name} --merge-dst-range sphinx_deleted 0 0`
         end
       end
